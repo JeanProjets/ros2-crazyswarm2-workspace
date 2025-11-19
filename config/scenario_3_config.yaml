@@ -1,0 +1,92 @@
+# Scenario 3 Configuration: Mobile Target Interception
+# Configuration for dynamic target tracking and jamming mission
+
+# Flight Parameters
+takeoff_height: 1.0  # meters
+patrol_height: 1.5   # meters
+max_velocity: 2.0    # m/s - Maximum safe velocity
+
+# Patrol Configuration
+patrol_pattern: "LAWNMOWER"
+patrol_bounds:
+  x_min: 0.0
+  x_max: 5.0
+  y_min: 0.0
+  y_max: 5.0
+patrol_spacing: 1.0  # meters between patrol lanes
+
+# Target Detection
+target_timeout: 60.0  # seconds - Time before fallback if target not found
+
+# Fallback Scan Positions
+# "Les 3 drones se placent sur la ligne des 3 m"
+fallback_positions:
+  N1: [3.0, 1.5, 4.0]  # North drone 1
+  N2: [3.0, 3.0, 4.0]  # North drone 2
+  P:  [3.0, 4.5, 4.0]  # Point/Polar drone
+
+scan_yaw_rate: 0.5  # rad/s - Rotation rate during hostile zone scan
+
+# Target Dynamics
+# Based on 3m circle/square pattern movement
+target_dynamics:
+  estimated_speed: 0.5          # m/s (Assumed based on 3m circle)
+  pattern_type: "CIRCLE_OR_SQUARE"  # Expected target behavior
+  prediction_lookahead: 0.5     # seconds - How far ahead to predict
+
+# Tracking Controller Gains
+tracking_gains:
+  kp_pos: 1.5      # Proportional gain for position error
+  kd_vel: 0.5      # Derivative gain for velocity matching
+  max_vel: 1.5     # m/s - Max velocity during tracking (must be > target speed)
+
+# Lead Pursuit Parameters
+lead_pursuit:
+  lookahead_gain: 1.0       # Speed multiplier for time-to-go calculation
+  min_lookahead: 0.1        # seconds - Minimum prediction time
+  max_lookahead: 1.0        # seconds - Maximum prediction time
+
+# Velocity Filter (for smoothing target velocity estimates)
+velocity_filter:
+  cutoff_frequency: 2.0  # Hz - Low-pass filter cutoff
+  sample_rate: 10.0      # Hz - Expected measurement rate
+  order: 2               # Filter order
+
+# Formation Control
+formation:
+  jamming_distance: 1.0      # meters - Distance to maintain during jamming
+  formation_tolerance: 0.2   # meters - Acceptable formation error
+  safety_distance: 0.5       # meters - Minimum safe distance between drones
+  velocity_damping: 0.8      # Velocity feedforward damping factor
+
+# Jamming Phase
+jamming_duration: 20.0  # seconds - How long to maintain jamming
+
+# Interception Strike
+strike:
+  dive_height: 0.3       # meters - How low to dive during strike
+  pullup_height: 2.0     # meters - Height to pull up to after strike
+  approach_tolerance: 0.3  # meters - How close counts as successful strike
+
+# Formation Presets
+formations:
+  line:
+    spacing: 1.5  # meters
+
+  triangle:
+    spacing: 1.5  # meters
+
+  jamming:
+    radius: 1.0  # meters - Circle around target
+
+# Safety Limits
+safety:
+  max_acceleration: 2.0  # m/s² - Maximum acceleration
+  max_jerk: 5.0          # m/s³ - Maximum jerk (rate of acceleration change)
+  emergency_stop_decel: 3.0  # m/s² - Deceleration for emergency stop
+
+# Performance Thresholds
+performance:
+  max_tracking_error: 0.5     # meters - Maximum acceptable tracking error
+  max_velocity_error: 0.2     # m/s - Maximum velocity matching error
+  min_jamming_success_rate: 0.8  # 80% of time within jamming_distance
