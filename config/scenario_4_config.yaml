@@ -1,0 +1,122 @@
+# Scenario 4 Configuration: Moving Target with Obstacles
+# Full complexity navigation combining target tracking and obstacle avoidance
+
+# Arena map definition
+arena_map:
+  # Grid resolution for path planning (meters per cell)
+  resolution: 0.25
+
+  # Arena dimensions (meters)
+  width: 10.0
+  height: 10.0
+
+  # Static obstacles in the environment
+  obstacles:
+    # Central box obstacle
+    - type: "box"
+      center: [5.0, 5.0]
+      size: [1.0, 1.0]
+
+    # Corner obstacle
+    - type: "box"
+      center: [2.0, 2.0]
+      size: [0.8, 0.8]
+
+    # Wall obstacle on the right
+    - type: "wall"
+      start: [7.0, 2.0]
+      end: [7.0, 8.0]
+      thickness: 0.2
+
+    # Horizontal wall creating corridor
+    - type: "wall"
+      start: [3.0, 7.0]
+      end: [6.0, 7.0]
+      thickness: 0.2
+
+    # Additional box for complexity
+    - type: "box"
+      center: [8.5, 5.0]
+      size: [0.6, 1.2]
+
+# Navigation parameters
+nav_parameters:
+  # Safety margin = drone radius + tolerance (meters)
+  # Crazyflie has ~0.15m radius, add 0.25m safety = 0.4m total
+  safety_margin: 0.4
+
+  # Replanning frequency (Hz)
+  # Higher = more responsive but more CPU
+  replan_rate: 5.0
+
+  # Lookahead time for target prediction (seconds)
+  # How far ahead to predict target motion
+  lookahead_time: 1.5
+
+  # Maximum drone speed (m/s)
+  max_drone_speed: 2.0
+
+  # Waypoint reached threshold (meters)
+  waypoint_threshold: 0.3
+
+# Formation configuration for swarm
+formation:
+  # Formation type: "line", "triangle", "square"
+  type: "line"
+
+  # Spacing between drones in formation (meters)
+  spacing: 1.0
+
+  # Formation behavior with obstacles
+  # "independent" - each drone paths independently
+  # "trace" - followers trace leader's path
+  behavior: "independent"
+
+# Target motion parameters (for simulation/testing)
+target:
+  # Target path type: "circle", "square", "figure8"
+  path_type: "circle"
+
+  # Speed of target motion (m/s)
+  speed: 0.8
+
+  # Path size/radius (meters)
+  path_size: 3.0
+
+  # Center of target path
+  path_center: [5.0, 5.0]
+
+# Drone initial positions
+drones:
+  leader:
+    id: 0
+    start_position: [1.0, 1.0, 1.0]  # x, y, z in meters
+
+  followers:
+    - id: 1
+      start_position: [1.0, 0.5, 1.0]
+
+    - id: 2
+      start_position: [1.0, 1.5, 1.0]
+
+# Performance constraints
+performance:
+  # Maximum acceptable planning time (milliseconds)
+  max_planning_time: 50
+
+  # Maximum formation error before warning (meters)
+  max_formation_error: 1.5
+
+# Safety parameters
+safety:
+  # Minimum altitude (meters)
+  min_altitude: 0.5
+
+  # Maximum altitude (meters)
+  max_altitude: 2.5
+
+  # Emergency stop distance to obstacles (meters)
+  emergency_stop_distance: 0.3
+
+  # Hover if no path found after N attempts
+  max_planning_failures: 3
