@@ -1,0 +1,134 @@
+# Scenario 2 Configuration: Corner Target with Boundary Constraints
+# This configuration defines parameters for the corner-based mission where
+# the target is located at (9.5, 0.5, 5.0) - very close to cage boundaries.
+
+# Cage physical dimensions (meters)
+cage_dimensions:
+  x: 10.0  # Length
+  y: 6.0   # Width
+  z: 8.0   # Height
+
+# Safety bounds - critical for Scenario 2 due to corner target location
+# These bounds include a 0.3m safety margin from physical walls
+safety_bounds:
+  x_min: 0.3
+  x_max: 9.7  # Critical: target is at X=9.5, only 0.2m from limit
+  y_min: 0.3
+  y_max: 5.7  # Critical: target is at Y=0.5, very close to limit
+  z_min: 0.2
+  z_max: 6.0
+
+# Target position (far corner location)
+target_position:
+  x: 9.5  # Near X boundary (only 0.5m from wall)
+  y: 0.5  # Near Y=0 boundary (only 0.5m from wall)
+  z: 5.0  # Mid-height
+  description: "Far corner target - requires precision flight"
+
+# Drone initial configurations
+drone_configs:
+  # Neutral Drone 1 - Can become Leader or Follower
+  cf1:
+    role: NEUTRAL_1
+    start_pos: [2.5, 2.5, 0.0]
+    radio_uri: "radio://0/80/2M/E7E7E7E701"
+
+  # Neutral Drone 2 - Can become Leader or Follower
+  cf2:
+    role: NEUTRAL_2
+    start_pos: [2.5, 3.5, 0.0]
+    radio_uri: "radio://0/80/2M/E7E7E7E702"
+
+  # Patrol Drone - Scout and detector
+  cf3:
+    role: PATROL
+    start_pos: [3.0, 5.0, 0.0]
+    radio_uri: "radio://0/80/2M/E7E7E7E703"
+
+# Mission-specific parameters
+mission_parameters:
+  # Flight speeds (m/s) - slower than Scenario 1 for precision
+  approach_speed: 0.7        # Reduced from 1.0 for boundary safety
+  cruise_speed: 1.0
+  precision_speed: 0.5       # Very slow for final approach near walls
+
+  # Formation parameters
+  formation_offset_x: -0.5   # Follower offset in X
+  formation_offset_y: 0.5    # Dynamic - can invert based on boundary proximity
+  formation_offset_z: -0.5   # Follower offset in Z
+
+  # Battery management
+  battery_abort_voltage: 3.4      # Emergency abort threshold
+  battery_warning_voltage: 3.5    # Return to home threshold
+  battery_log_interval: 5.0       # Log battery every 5 seconds
+
+  # Safety parameters
+  max_acceleration: 0.5           # m/s² - reduced for boundary safety
+  boundary_warning_distance: 0.5  # Warn when within 0.5m of boundary
+
+  # Timing parameters (seconds)
+  takeoff_height: 1.0
+  takeoff_duration: 2.5
+  landing_duration: 3.0
+  hover_duration: 1.0
+
+  # Mission timeouts (seconds)
+  total_mission_timeout: 210      # 3m 30s total
+  patrol_timeout: 120             # 2 min max for patrol phase
+  approach_timeout: 60            # 1 min for precision approach
+  jamming_timeout: 30             # 30s for jamming phase
+  neutralization_timeout: 20      # 20s for final neutralization
+
+# State machine configuration
+states:
+  INITIALIZATION:
+    description: "Safety zone setup and preflight checks"
+    max_duration: 30
+
+  LONG_RANGE_PATROL:
+    description: "P covers full field to find corner target"
+    max_duration: 120
+    patrol_pattern: "sweep"  # Options: sweep, grid, spiral
+
+  TARGET_LOCK:
+    description: "Detection at distance"
+    max_duration: 10
+    lock_distance: 3.0  # meters
+
+  PRECISION_APPROACH:
+    description: "Leader/Follower move to standoff point"
+    max_duration: 60
+    standoff_point: [9.0, 1.0, 5.0]  # Safer position before final approach
+    approach_speed: 0.5  # Very slow to prevent overshoot
+
+  CORNER_JAMMING:
+    description: "Jamming phase - maintain position without drifting"
+    max_duration: 30
+    no_drift_zone_x_max: 9.5  # Must not drift beyond target X
+
+  VERTICAL_NEUTRALIZATION:
+    description: "P attacks from strictly above (Z-axis descent)"
+    max_duration: 20
+    attack_approach: "vertical_only"  # No swooping in tight space
+    descent_speed: 0.3  # m/s - very controlled descent
+
+  MISSION_COMPLETE:
+    description: "Return to base"
+    max_duration: 60
+    rtb_height: 1.5  # Return at safe height
+
+# Logging configuration
+logging:
+  level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR
+  log_battery: true
+  log_positions: true
+  log_state_transitions: true
+  log_safety_events: true
+  output_file: "logs/scenario_2_mission.log"
+
+# Emergency procedures
+emergency:
+  auto_land_on_critical_battery: true
+  auto_land_on_boundary_violation: false  # Just clamp instead
+  emergency_landing_speed: 0.3  # m/s
+  emergency_hover_height: 1.0   # Hover here if emergency stop called
