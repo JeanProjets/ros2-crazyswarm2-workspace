@@ -109,10 +109,10 @@ class ScenarioCoordinator(Node):
         self.target_position = self.POSITIONS['C_position']
 
         # ROS2 publishers for each drone
-        self.publishers = {}
+        self.status_publishers = {}
         for name in self.drones.keys():
             topic = f'/drone_status/{name}'
-            self.publishers[name] = self.create_publisher(DroneStatus, topic, 10)
+            self.status_publishers[name] = self.create_publisher(DroneStatus, topic, 10)
 
         # Mission phase publisher
         self.phase_pub = self.create_publisher(DroneStatus, '/mission_coordinator/phase', 10)
@@ -171,7 +171,7 @@ class ScenarioCoordinator(Node):
 
             msg.role = drone.role.value
 
-            self.publishers[name].publish(msg)
+            self.status_publishers[name].publish(msg)
 
     def run_mission(self):
         """Execute the complete mission sequence"""
