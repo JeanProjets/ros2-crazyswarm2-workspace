@@ -458,10 +458,7 @@ class ScenarioCoordinator(Node):
 
 def main():
     """Main entry point for hackathon scenario 1"""
-    # Initialize ROS2
-    rclpy.init()
-
-    # Initialize Crazyswarm
+    # Initialize Crazyswarm (this also initializes ROS2)
     swarm = Crazyswarm()
 
     # Create scenario coordinator
@@ -472,7 +469,6 @@ def main():
 
     # Cleanup
     coordinator.destroy_node()
-    rclpy.shutdown()
 
 
 if __name__ == '__main__':
